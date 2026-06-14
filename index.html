@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Cup Pixel Ball - Own a Piece of Football History</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A giant interactive 3D football floating in space. Every pixel is a unique NFT on Base. Mint, wait, and discover what happens at 100% sellout.">
+    <!-- Google Fonts: Space Grotesk, Outfit, and Architects Daughter for hand-drawn chalk styles -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js and OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Farcaster Frame v2 / Mini-App SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Premium Stadium Ambient Sound Elements -->
+    <div id="ambient-container" style="display:none;"></div>
+
+    <!-- Hand-drawn SVG chalkboard coach annotations overlay (Unique Human Touch) -->
+    <svg id="chalk-annotations" viewBox="0 0 1000 600" preserveAspectRatio="none">
+        <defs>
+            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(0, 245, 255, 0.5)" />
+            </marker>
+            <marker id="arrow-gold" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255, 215, 0, 0.5)" />
+            </marker>
+        </defs>
+
+        <!-- Draw coach strategy arrows and chalk circles -->
+        <!-- Drag instructions chalk arrow -->
+        <path d="M 370 140 C 420 100, 480 110, 490 170" fill="none" stroke="rgba(0, 245, 255, 0.4)" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-cyan)" />
+        <text x="250" y="130" class="chalk-text text-cyan rotated-left">Grab & Spin Ball 360°</text>
+        
+        <!-- Faint soccer play tactics background doodles -->
+        <!-- Top left x/o diagram -->
+        <text x="60" y="100" class="chalk-text-large">X</text>
+        <path d="M 80 95 C 100 110, 110 90, 130 110" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-dasharray="2,2" />
+        <text x="140" y="120" class="chalk-text-large">O</text>
+        <path d="M 120 125 C 100 150, 70 130, 60 160" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" marker-end="url(#arrow-cyan)" />
+
+        <!-- Progress bar chalkboard notes -->
+        <path d="M 500 500 L 520 475" fill="none" stroke="rgba(255, 215, 0, 0.4)" stroke-width="1.5" marker-end="url(#arrow-gold)" />
+        <text x="440" y="520" class="chalk-text text-gold">Mystery Unlocks at 100% Sellout</text>
+
+        <!-- Dynamic note for bottom dock -->
+        <path d="M 640 540 C 670 540, 680 520, 685 490" fill="none" stroke="rgba(255, 255, 255, 0.25)" stroke-width="1.5" stroke-dasharray="3,3" />
+        <text x="690" y="480" class="chalk-text text-muted">Toggle panels via floating Dock</text>
+    </svg>
+
+    <!-- Handwritten owner message pop-up tooltip (follows mouse) -->
+    <div id="custom-tooltip" class="handwritten-tooltip">
+        <div class="tooltip-arrow"></div>
+        <div class="tooltip-header">
+            <span class="tooltip-id">Pixel #120</span>
+            <span class="tooltip-rarity">NORMAL</span>
+        </div>
+        <p class="tooltip-msg">"For Pelé! 🇧🇷"</p>
+        <div class="tooltip-owner">Owner: 0x2a1...4920</div>
+    </div>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="luxury-header">
+            <div class="header-logo">
+                <div class="logo-ball-glow"></div>
+                <i class="fa-solid fa-circle-nodes logo-icon"></i>
+                <div class="logo-text">
+                    <span class="logo-title">PIXEL BALL</span>
+                    <span class="logo-subtitle">WORLD CUP EDITION</span>
+                </div>
+            </div>
+            
+            <div class="taglines-slider-container">
+                <div class="tagline-track" id="tagline-track">
+                    <div class="tagline-item"><i class="fa-solid fa-trophy text-gold"></i> Own a piece of football history.</div>
+                    <div class="tagline-item"><i class="fa-solid fa-sparkles text-cyan"></i> The final surprise unlocks at 100%.</div>
+                    <div class="tagline-item"><i class="fa-solid fa-globe text-blue"></i> Every pixel matters. Base NFT.</div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <!-- Sound Toggle -->
+                <button class="header-btn btn-glass sound-toggle-btn" id="sound-toggle" title="Toggle Stadium Sound">
+                    <i class="fa-solid fa-volume-xmark sound-icon"></i>
+                    <span>STADIUM CROWD</span>
+                </button>
+                
+                <!-- Wallet Connector -->
+                <button class="header-btn btn-premium" id="wallet-connect-btn">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span id="wallet-btn-text">CONNECT WALLET</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="dashboard-layout">
+            <!-- CENTER WORKSPACE: 3D FOOTBALL VIEWPORT -->
+            <section class="center-viewport">
+                <!-- 3D Canvas Container -->
+                <div class="canvas-wrapper">
+                    <canvas id="ball-canvas"></canvas>
+                    
+                    <!-- Floating overlays on Canvas -->
+                    <div class="canvas-controls">
+                        <button class="canvas-control-btn" id="ctrl-rotate" title="Auto Rotate Ball">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                        <button class="canvas-control-btn" id="ctrl-reset" title="Reset View Angle">
+                            <i class="fa-solid fa-compress"></i>
+                        </button>
+                        <button class="canvas-control-btn" id="ctrl-theme" title="Toggle Outer Space Lighting">
+                            <i class="fa-solid fa-moon"></i>
+                        </button>
+                    </div>
+
+                    <!-- Developer Debug/Demo Control Panel (Discreetly placed) -->
+                    <div class="dev-control-panel glass-panel">
+                        <div class="dev-header">
+                            <span><i class="fa-solid fa-gears"></i> DEMO / TESTING PANEL</span>
+                            <button id="dev-toggle-btn"><i class="fa-solid fa-chevron-up"></i></button>
+                        </div>
+                        <div class="dev-body" id="dev-panel-body">
+                            <button class="btn-dev" id="dev-mint-10">Simulate 10 Mints</button>
+                            <button class="btn-dev btn-dev-warn" id="dev-fast-forward">Fast-Forward to 99.8%</button>
+                            <button class="btn-dev" id="dev-toggle-mint-speed">Speed: Normal</button>
+                            <span class="dev-note">Speed up mints to watch the ball color in & test the 100% sellout unlock event.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROGRESS & STATS BANNER -->
+                <div class="progress-bar-section glass-panel">
+                    <div class="progress-info">
+                        <div class="progress-metric">
+                            <span class="metric-label">MINT PROGRESS</span>
+                            <span class="metric-value text-cyan" id="progress-percent">84.20%</span>
+                        </div>
+                        <div class="progress-metric text-right">
+                            <span class="metric-label">PIXELS MINTED</span>
+                            <span class="metric-value" id="progress-ratio">1684 / 2000</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-outer">
+                        <div class="progress-bar-inner" id="progress-bar-fill" style="width: 84.2%;"></div>
+                        <div class="progress-bar-glow" id="progress-bar-glow" style="width: 84.2%;"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- DRAWER LEFT: LIVE WORLD CUP ENERGY (Moved to body level to fix z-index stacking contexts) -->
+    <div class="drawer-panel drawer-left" id="drawer-left">
+        <div class="sheet-handle"></div>
+        <button class="drawer-close-btn" id="close-left-drawer">&times;</button>
+        <div class="panel-header">
+            <i class="fa-solid fa-bolt text-cyan animation-pulse"></i>
+            <h2>LIVE ENERGY</h2>
+        </div>
+
+        <div class="panel-tabs">
+            <button class="tab-btn active" data-tab="live-feed">MINT FEED</button>
+            <button class="tab-btn" data-tab="leaderboards">LEADERS</button>
+            <button class="tab-btn" data-tab="teams">TEAMS</button>
+        </div>
+
+        <div class="panel-tab-content active" id="live-feed-tab">
+            <div class="live-feed-scroll" id="live-mint-feed">
+                <!-- Dynamically filled by JS -->
+            </div>
+        </div>
+
+        <div class="panel-tab-content" id="leaderboards-tab">
+            <div class="leaderboard-section">
+                <h3><i class="fa-solid fa-globe"></i> TOP COUNTRIES</h3>
+                <div class="leaderboard-list" id="country-leaderboard">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+            <div class="leaderboard-divider"></div>
+            <div class="leaderboard-section">
+                <h3><i class="fa-solid fa-crown text-gold"></i> TOP COLLECTORS</h3>
+                <div class="leaderboard-list" id="collector-leaderboard">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-tab-content" id="teams-tab">
+            <h3><i class="fa-solid fa-shirt"></i> TEAM SUPPORTERS</h3>
+            <div class="teams-list" id="team-rankings">
+                <!-- Filled dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- DRAWER RIGHT: PIXEL PORTAL (Moved to body level to fix z-index stacking contexts) -->
+    <div class="drawer-panel drawer-right show-inspector" id="drawer-right">
+        <div class="sheet-handle"></div>
+        <button class="drawer-close-btn" id="close-right-drawer">&times;</button>
+        
+        <div class="panel-header">
+            <i class="fa-solid fa-fingerprint text-gold"></i>
+            <h2>PIXEL PORTAL</h2>
+        </div>
+
+        <div class="panel-tabs" id="right-panel-tabs">
+            <button class="tab-btn" id="right-tab-wallet" data-right-tab="wallet">MY WALLET</button>
+            <button class="tab-btn active" id="right-tab-inspector" data-right-tab="inspector">INSPECTOR</button>
+            <button class="tab-btn" id="right-tab-marketplace" data-right-tab="marketplace">MARKETPLACE</button>
+        </div>
+        
+        <!-- WALLET MODULE -->
+        <div class="wallet-status-section" id="wallet-status-section">
+            <div class="wallet-status-disconnected" id="wallet-disconnected-view">
+                <p class="section-desc">Connect Base wallet to mint your pixel, list on the marketplace, or bid on premium coordinates.</p>
+            </div>
+            <div class="wallet-status-connected" id="wallet-connected-view" style="display: none;">
+                <div class="wallet-user-info">
+                    <div class="user-avatar"><i class="fa-solid fa-user-shield"></i></div>
+                    <div class="user-meta">
+                        <span class="wallet-address" id="wallet-address-display">0x71C...3a9</span>
+                        <span class="wallet-network"><i class="fa-solid fa-circle text-green"></i> Base Network</span>
+                    </div>
+                </div>
+                <div class="wallet-balances">
+                    <div class="balance-item">
+                        <span class="bal-label">ETH</span>
+                        <span class="bal-val" id="user-eth-bal">0.054 ETH</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="bal-label">USDC</span>
+                        <span class="bal-val" id="user-usdc-bal">150.00 USDC</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIXEL INSPECTOR -->
+        <div class="inspector-section">
+            <div class="panel-header header-border">
+                <i class="fa-solid fa-magnifying-glass-chart text-gold"></i>
+                <h2>PIXEL INSPECTOR</h2>
+            </div>
+
+            <div class="inspector-card" id="inspector-card">
+                <!-- Unselected State -->
+                <div class="inspector-placeholder" id="inspector-placeholder">
+                    <i class="fa-solid fa-crosshairs target-pulse"></i>
+                    <p>Hover over the 3D football & click any pixel to inspect details, check rarity, and mint or bid.</p>
+                </div>
+                
+                <!-- Selected State (hidden initially) -->
+                <div class="inspector-details" id="inspector-details" style="display: none;">
+                    <div class="pixel-info-header">
+                        <div class="pixel-title">
+                            <span class="pixel-name" id="inspect-pixel-name">Pixel #1240</span>
+                            <span class="pixel-rarity-badge" id="inspect-pixel-rarity">NORMAL</span>
+                        </div>
+                        <div class="pixel-status-badge" id="inspect-pixel-status">AVAILABLE</div>
+                    </div>
+                    
+                    <div class="pixel-specs-grid">
+                        <div class="spec-tile">
+                            <span class="tile-label">Location Section</span>
+                            <span class="tile-value" id="inspect-pixel-section">Pentagon 3</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">Coordinates</span>
+                            <span class="tile-value" id="inspect-pixel-coords">X: 12, Y: 45, Z: -8</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">Owner</span>
+                            <span class="tile-value" id="inspect-pixel-owner">None (Contract)</span>
+                        </div>
+                        <div class="spec-tile">
+                            <span class="tile-label">Supporter Team</span>
+                            <span class="tile-value" id="inspect-pixel-team">-</span>
+                        </div>
+                    </div>
+
+                    <div class="pixel-actions" id="inspector-actions">
+                        <!-- Action Buttons dynamically rendered here based on status (Mint, Bid, Buy, List) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MARKETPLACE MODULE -->
+        <div class="marketplace-section">
+            <div class="panel-header header-border">
+                <i class="fa-solid fa-shop text-cyan"></i>
+                <h2>PIXEL MARKETPLACE</h2>
+                <span class="marketplace-lock-badge" id="mkt-lock-badge">STAGES: PRE-SELLOUT</span>
+            </div>
+
+            <div class="marketplace-content">
+                <!-- Pre-sellout warning / prompt -->
+                <div class="marketplace-notice active" id="marketplace-notice-pre">
+                    <p class="notice-title"><i class="fa-solid fa-lock"></i> Secondary Trading Locked</p>
+                    <p class="notice-body">Owner listings and auctions will activate automatically after all pixels are minted (100% Sellout). Currently in primary mint phase.</p>
+                </div>
+
+                <!-- Active Marketplace (Hidden until sellout or simulated activation) -->
+                <div class="marketplace-active" id="marketplace-active-view" style="display: none;">
+                    <div class="mkt-tabs">
+                        <button class="mkt-tab-btn active" data-mkt-tab="auctions">AUCTIONS</button>
+                        <button class="mkt-tab-btn" data-mkt-tab="listings">BUY NOW</button>
+                        <button class="mkt-tab-btn" data-mkt-tab="my-pixels">MY PIXELS</button>
+                    </div>
+
+                    <!-- Auctions Sub-Tab -->
+                    <div class="mkt-tab-content active" id="mkt-auctions-tab">
+                        <div class="marketplace-items-list" id="mkt-auctions-list">
+                            <!-- Dynamic auctions listings -->
+                        </div>
+                    </div>
+
+                    <!-- Buy Now Listings Sub-Tab -->
+                    <div class="mkt-tab-content" id="mkt-listings-tab">
+                        <div class="marketplace-items-list" id="mkt-listings-list">
+                            <!-- Dynamic buy now listings -->
+                        </div>
+                    </div>
+
+                    <!-- User Inventory Sub-Tab -->
+                    <div class="mkt-tab-content" id="mkt-my-pixels-tab">
+                        <div class="my-pixels-grid" id="mkt-mypixels-list">
+                            <!-- Dynamic list of user-owned pixels and options to sell/auction -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MINIMALIST FLOATING BOTTOM DOCK (Unique Human Touch / macOS Style Dock) -->
+    <div class="floating-dock">
+        <button class="dock-btn active" id="dock-btn-chalk" title="Toggle Chalkboard Annotations">
+            <i class="fa-solid fa-pen-ruler"></i>
+            <span class="dock-tooltip">Chalkboard Play</span>
+        </button>
+        <button class="dock-btn" id="dock-btn-feed" title="Open Live Feed & Stats">
+            <i class="fa-solid fa-bolt"></i>
+            <span class="dock-tooltip">Live Energy</span>
+        </button>
+        <button class="dock-btn" id="dock-btn-wallet" title="Open Wallet Status">
+            <i class="fa-solid fa-wallet"></i>
+            <span class="dock-tooltip">My Wallet</span>
+        </button>
+        <button class="dock-btn" id="dock-btn-mkt" title="Open Secondary Market">
+            <i class="fa-solid fa-shop"></i>
+            <span class="dock-tooltip">Marketplace</span>
+        </button>
+    </div>
+
+    <!-- 100% CELEBRATION / COMMUNITY UNLOCK OVERLAY -->
+    <div class="celebration-overlay" id="celebration-modal">
+        <div class="celebration-card glass-panel">
+            <div class="celebration-glow"></div>
+            
+            <button class="celebration-close-btn" id="close-celebration-btn">&times;</button>
+
+            <i class="fa-solid fa-trophy celebration-trophy"></i>
+            <h1>COMMUNITY UNLOCK ACTIVE</h1>
+            <h2>100% OF WORLD CUP PIXEL BALL IS CLAIMED!</h2>
+            
+            <p class="celebration-para">The mystery has been revealed. The black-and-white grid has fully evolved into a glowing, community-owned World Cup monument.</p>
+            
+            <div class="unlocked-feature-card">
+                <h3><i class="fa-solid fa-unlock-keyhole"></i> NEW FEATURE UNLOCKED: PAINT STATION</h3>
+                <p>As a Pixel owner, you can now recolor any of your pixels in real-time. Make your mark, paint your national flags, and build the ultimate global monument together.</p>
+                
+                <div class="paint-station-controls" id="paint-station-controls">
+                    <div class="paint-pixel-selector">
+                        <label for="paint-pixel-dropdown">Select Your Pixel:</label>
+                        <select id="paint-pixel-dropdown">
+                            <!-- Populated with user pixels -->
+                        </select>
+                    </div>
+                    <div class="paint-color-selector">
+                        <label for="paint-color-picker">Choose Color:</label>
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="paint-color-picker" value="#00ffff">
+                            <div class="preset-colors">
+                                <span class="color-swatch" style="background:#ff0000;" data-color="#ff0000"></span>
+                                <span class="color-swatch" style="background:#00ff00;" data-color="#00ff00"></span>
+                                <span class="color-swatch" style="background:#0000ff;" data-color="#0000ff"></span>
+                                <span class="color-swatch" style="background:#ffd700;" data-color="#ffd700"></span>
+                                <span class="color-swatch" style="background:#ffffff;" data-color="#ffffff"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-premium" id="apply-paint-btn">APPLY PAINT TO PIXEL</button>
+                </div>
+            </div>
+
+            <div class="celebration-stats">
+                <div class="cel-stat">
+                    <span class="cel-stat-label">Global Owners</span>
+                    <span class="cel-stat-val">1,482</span>
+                </div>
+                <div class="cel-stat">
+                    <span class="cel-stat-label">Rare Pixels Unlocked</span>
+                    <span class="cel-stat-val">32 / 32</span>
+                </div>
+                <div class="cel-stat">
+                    <span class="cel-stat-label">Marketplace Status</span>
+                    <span class="cel-stat-val text-cyan">ACTIVE</span>
+                </div>
+            </div>
+
+            <button class="btn-premium btn-large" id="enter-monument-btn">ENTER EVOLVED MONUMENT</button>
+        </div>
+    </div>
+
+    <!-- Custom scripts -->
+    <script src="app.js"></script>
+    <script src="football3d.js"></script>
+</body>
+</html>
