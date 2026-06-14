@@ -1298,7 +1298,6 @@ function initFarcasterFrameSDK() {
             const context = window.frame.sdk.context;
             if (context && context.user) {
                 const fcUser = context.user;
-                console.log("Farcaster User context loaded:", fcUser);
                 
                 // Save Farcaster User Details to App State
                 state.farcasterUser = {
@@ -1307,6 +1306,13 @@ function initFarcasterFrameSDK() {
                     displayName: fcUser.displayName || `FID ${fcUser.fid}`,
                     pfpUrl: fcUser.pfpUrl || 'https://warpcast.com/avatar.png'
                 };
+                
+                // Safe log to prevent TypeError: Cannot convert object to primitive value
+                try {
+                    console.log("Farcaster User context loaded:", JSON.stringify(state.farcasterUser));
+                } catch (e) {
+                    console.log("Farcaster User context loaded (safe):", state.farcasterUser.username);
+                }
                 
                 // Auto-connect simulated Web3 wallet derived deterministically from their FID
                 state.walletConnected = true;
