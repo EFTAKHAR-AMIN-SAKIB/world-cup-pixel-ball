@@ -1316,7 +1316,8 @@ function initFarcasterFrameSDK() {
                 
                 // Auto-connect simulated Web3 wallet derived deterministically from their FID
                 state.walletConnected = true;
-                const fidHex = fcUser.fid.toString(16).padStart(4, '0');
+                const fidStr = fcUser.fid ? fcUser.fid.toString() : "0";
+                const fidHex = (parseInt(fidStr, 10) || 0).toString(16).padStart(4, '0');
                 state.userAddress = `0xFC${fidHex}000000000000000000000000000000000${fidHex}`;
                 
                 // Update UI to welcome Farcaster identity
